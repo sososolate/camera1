@@ -3,36 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>摄像头切换示例</title>
+    <title>后置摄像头切换</title>
 </head>
 <body>
-    <h2>摄像头切换示例</h2>
+    <h2>后置摄像头切换</h2>
     <video id="video" autoplay style="width: 100%; max-width: 600px;"></video>
-    <button id="toggleCamera">切换摄像头</button>
+    <button id="startCamera">启用后置摄像头</button>
+    <button id="toggleCamera" disabled>切换摄像头</button>
 
     <script>
-        let currentFacingMode = "user"; // 默认使用前置摄像头
+        let currentStream = null;
+        let currentFacingMode = "environment"; // 默认后置摄像头
         let videoElement = document.getElementById("video");
+        let startCameraButton = document.getElementById("startCamera");
+        let toggleCameraButton = document.getElementById("toggleCamera");
 
         function startCamera(facingMode) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop()); // 关闭当前摄像头
+            }
+
             navigator.mediaDevices.getUserMedia({
                 video: { facingMode: facingMode }
             })
             .then(stream => {
+                currentStream = stream;
                 videoElement.srcObject = stream;
+                toggleCameraButton.disabled = false; // 启用切换按钮
             })
             .catch(error => {
                 console.log("摄像头访问失败: ", error);
             });
         }
 
-        document.getElementById("toggleCamera").addEventListener("click", function() {
-            currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-            startCamera(currentFacingMode);
+        startCameraButton.addEventListener("click", function() {
+            startCamera("environment"); // 启用后置摄像头
         });
 
-        // 页面加载时启动前置摄像头
-        startCamera(currentFacingMode);
+        toggleCameraButton.addEventListener("click", function() {
+            currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+            startCamera(currentFacingMode); // 切换摄像头
+        });
     </script>
 </body>
 </html>
